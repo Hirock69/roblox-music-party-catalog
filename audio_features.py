@@ -92,4 +92,3 @@ def rhythm(path):
     if len(times)<8 or not 40<=bpm<=300: confidence=0
     return dict(version=1,bpm=round(bpm,3),confidence=round(float(confidence),4),
                 beats=[round(float(t),5) for t in times if 0<=t<len(y)/sr],method='librosa 0.11.0 onset correlation/beat_track; estimated')
-
