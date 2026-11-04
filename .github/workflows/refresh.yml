@@ -48,3 +48,27 @@ jobs:
       - name: Deploy completed catalog
         id: deploy
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+  record:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Record successful catalog deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CATALOG_REPOSITORY: ${{ github.repository }}
+        run: |
+          python - <<'PYCODE'
+          import base64,json,os,subprocess,urllib.request
+          url='https://hirock69.github.io/roblox-music-party-catalog/health.json'
+          with urllib.request.urlopen(url,timeout=30) as response: payload=response.read(100000)
+          data=json.loads(payload);assert data['eligible']>0
+          endpoint='repos/'+os.environ['CATALOG_REPOSITORY']+'/contents/last-refresh.json'
+          result=subprocess.run(['gh','api',endpoint],capture_output=True,text=True)
+          body={'message':'Record successful catalog refresh '+data['generatedAt'],'content':base64.b64encode(payload).decode()}
+          if result.returncode==0: body['sha']=json.loads(result.stdout)['sha']
+          with open('/tmp/catalog-record.json','w') as f:json.dump(body,f)
+          subprocess.run(['gh','api','-X','PUT',endpoint,'--input','/tmp/catalog-record.json','--jq','.commit.sha'],check=True)
+          PYCODE
