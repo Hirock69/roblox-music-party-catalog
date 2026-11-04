@@ -1,11 +1,25 @@
 {
-  "chartLimit": 20,
+  "chartLimit": 40,
   "excludedArtists": [
     "Human Sound Recorder",
-    "Ocean Hill Noise"
+    "Ocean Hill Noise",
+    "Milos Krkoska",
+    "Richard Allen Harvey",
+    "Einschlafmusik für Babys",
+    "Bruton"
   ],
   "excludedWords": [
     "Void"
   ],
-  "excludedAssetIds": []
+  "excludedAssetIds": [],
+  "excludedTracks": [
+    {
+      "artist": "Brian Bennett",
+      "title": "Twilight Zone"
+    },
+    {
+      "artist": "Sonoton Vinyl",
+      "title": "Threat Of Death"
+    }
+  ]
 }

@@ -30,6 +30,8 @@ def digest(value):return hashlib.sha256(value).hexdigest()
 def blocked(song,policy):
     if song['assetId'] in policy['excludedAssetIds']:return 'asset'
     if song['artist'].strip().lower() in [v.strip().lower() for v in policy['excludedArtists']]:return 'artist'
+    artist=song['artist'].strip().lower();title=song['title'].strip().lower()
+    if any(artist==pair['artist'].strip().lower() and title==pair['title'].strip().lower() for pair in policy.get('excludedTracks',[])):return 'track'
     text=(song['title']+' '+song['artist']).lower()
     return 'word' if any(v.strip().lower() in text for v in policy['excludedWords']) else None
 
@@ -62,15 +64,21 @@ def extract(raw,asset,workspace):
     # Decoder padding varies slightly. Keep a small bounded tail without looping.
     return dict(profile=profile,playbackSeconds=max(duration,f['duration']),tailSeconds=0.1)
 
-def build(seed=None):
-    policy=json.loads((ROOT/'selection-policy.json').read_text());assert policy['chartLimit']==20
+def load_chart(policy):
+    limit=policy['chartLimit'];assert type(limit) is int and 1<=limit<=40
     assert all(isinstance(v,str) and v.strip() for key in ('excludedArtists','excludedWords') for v in policy[key])
+    assert all(type(pair) is dict and all(isinstance(pair.get(k),str) and pair[k].strip() for k in ('artist','title')) for pair in policy.get('excludedTracks',[]))
+    endpoint='https://apis.roblox.com/music-discovery/v1/top-songs?pageToken=0&limit='+str(limit)
+    response=json.loads(fetch(endpoint,100000));songs=response['songs'];assert len(songs)==limit
+    assert len({s['assetId'] for s in songs})==limit
+    return endpoint,songs
+
+def build(seed=None):
+    policy=json.loads((ROOT/'selection-policy.json').read_text())
+    endpoint,songs=load_chart(policy)
     cache=ROOT/'.cache';cache.mkdir(exist_ok=True);site=ROOT/'site'
     if site.exists():shutil.rmtree(site)
     (site/'profiles').mkdir(parents=True)
-    endpoint='https://apis.roblox.com/music-discovery/v1/top-songs?pageToken=0&limit=20'
-    response=json.loads(fetch(endpoint,100000));songs=response['songs'];assert len(songs)==20
-    assert len({s['assetId'] for s in songs})==20
     rows=[];report=[];timestamp=datetime.now(timezone.utc).isoformat()
     for rank,song in enumerate(songs,1):
         reason=blocked(song,policy)

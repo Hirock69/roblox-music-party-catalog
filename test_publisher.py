@@ -24,4 +24,25 @@ class PublisherTests(unittest.TestCase):
             validate_profile(result['profile'],123)
             with self.assertRaises(AssertionError):validate_profile(result['profile'],124)
 
+
+    def test_top40_and_exact_artist_title_exclusions(self):
+        from unittest.mock import patch
+        import json
+        import publisher
+        policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
+        self.assertEqual(policy['chartLimit'],40)
+        for artist in ('Milos Krkoska','Richard Allen Harvey','Einschlafmusik für Babys','Bruton'):
+            self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':'Music'},policy),'artist')
+        for artist,title in (('Brian Bennett','Twilight Zone'),('Sonoton Vinyl','Threat Of Death')):
+            self.assertEqual(publisher.blocked({'assetId':1,'artist':' '+artist.upper()+' ','title':' '+title.upper()+' '},policy),'track')
+            self.assertIsNone(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song'},policy))
+            self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Other Artist','title':title},policy))
+        songs=[{'assetId':i} for i in range(1,41)]
+        with patch.object(publisher,'fetch',return_value=json.dumps({'songs':songs}).encode()) as fetch:
+            endpoint,received=publisher.load_chart(policy)
+            self.assertEqual(len(received),40);self.assertEqual(received[-1]['assetId'],40)
+            self.assertIn('limit=40',endpoint);fetch.assert_called_once_with(endpoint,100000)
+        with patch.object(publisher,'fetch',return_value=json.dumps({'songs':songs[:20]}).encode()):
+            with self.assertRaises(AssertionError):publisher.load_chart(policy)
+
 if __name__=='__main__':unittest.main()
