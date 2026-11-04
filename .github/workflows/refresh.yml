@@ -1,0 +1,50 @@
+name: Refresh analyzed music catalog
+on:
+  schedule:
+    - cron: '17 18 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['*.py', 'requirements.txt', 'selection-policy.json', '.github/workflows/refresh.yml']
+permissions:
+  contents: read
+concurrency:
+  group: catalog-pages
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+          cache: pip
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: .cache
+          key: music-analysis-v1-${{ github.run_id }}
+          restore-keys: music-analysis-v1-
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: python -m pip install -r requirements.txt
+      - run: python publisher.py
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
+        with:
+          path: site
+  deploy:
+    needs: refresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy completed catalog
+        id: deploy
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e

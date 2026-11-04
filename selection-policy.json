@@ -1,0 +1,11 @@
+{
+  "chartLimit": 20,
+  "excludedArtists": [
+    "Human Sound Recorder",
+    "Ocean Hill Noise"
+  ],
+  "excludedWords": [
+    "Void"
+  ],
+  "excludedAssetIds": []
+}
