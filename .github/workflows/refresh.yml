@@ -30,6 +30,7 @@ jobs:
           restore-keys: music-analysis-v1-
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: python -m pip install -r requirements.txt
+      - run: python -m unittest discover -v
       - run: python publisher.py
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
         with:
@@ -62,7 +63,7 @@ jobs:
         run: |
           python - <<'PYCODE'
           import base64,json,os,subprocess,urllib.request
-          url='https://hirock69.github.io/roblox-music-party-catalog/health.json'
+          url='https://hirock69.github.io/roblox-music-party-catalog/health.json?run='+os.environ['GITHUB_RUN_ID']
           with urllib.request.urlopen(url,timeout=30) as response: payload=response.read(100000)
           data=json.loads(payload);assert data['eligible']>0
           endpoint='repos/'+os.environ['CATALOG_REPOSITORY']+'/contents/last-refresh.json'
