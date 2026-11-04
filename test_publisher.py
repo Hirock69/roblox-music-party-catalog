@@ -45,4 +45,18 @@ class PublisherTests(unittest.TestCase):
         with patch.object(publisher,'fetch',return_value=json.dumps({'songs':songs[:20]}).encode()):
             with self.assertRaises(AssertionError):publisher.load_chart(policy)
 
+
+    def test_scoped_title_words_and_new_exact_exclusions(self):
+        import json
+        import publisher
+        policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
+        def song(artist,title):return {'assetId':1,'artist':artist,'title':title}
+        self.assertEqual(publisher.blocked(song('Jonathan Bourne','Music'),policy),'artist')
+        for title in ('Immortals','Epic Trailer'):
+            self.assertEqual(publisher.blocked(song('Kosinus',title),policy),'track')
+        self.assertIsNone(publisher.blocked(song('Kosinus','Other Music'),policy))
+        self.assertEqual(publisher.blocked(song(" MARC DALL'ANESE ",'Powerful ePiC Theme'),policy),'artist-title-word')
+        self.assertIsNone(publisher.blocked(song("Marc Dall'Anese",'Quiet Theme'),policy))
+        self.assertIsNone(publisher.blocked(song('Other Artist','Epic Theme'),policy))
+
 if __name__=='__main__':unittest.main()

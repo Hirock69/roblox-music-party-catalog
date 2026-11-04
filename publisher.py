@@ -32,6 +32,7 @@ def blocked(song,policy):
     if song['artist'].strip().lower() in [v.strip().lower() for v in policy['excludedArtists']]:return 'artist'
     artist=song['artist'].strip().lower();title=song['title'].strip().lower()
     if any(artist==pair['artist'].strip().lower() and title==pair['title'].strip().lower() for pair in policy.get('excludedTracks',[])):return 'track'
+    if any(artist==rule['artist'].strip().lower() and rule['word'].strip().lower() in title for rule in policy.get('excludedTrackWords',[])):return 'artist-title-word'
     text=(song['title']+' '+song['artist']).lower()
     return 'word' if any(v.strip().lower() in text for v in policy['excludedWords']) else None
 
@@ -68,6 +69,7 @@ def load_chart(policy):
     limit=policy['chartLimit'];assert type(limit) is int and 1<=limit<=40
     assert all(isinstance(v,str) and v.strip() for key in ('excludedArtists','excludedWords') for v in policy[key])
     assert all(type(pair) is dict and all(isinstance(pair.get(k),str) and pair[k].strip() for k in ('artist','title')) for pair in policy.get('excludedTracks',[]))
+    assert all(type(rule) is dict and all(isinstance(rule.get(k),str) and rule[k].strip() for k in ('artist','word')) for rule in policy.get('excludedTrackWords',[]))
     endpoint='https://apis.roblox.com/music-discovery/v1/top-songs?pageToken=0&limit='+str(limit)
     response=json.loads(fetch(endpoint,100000));songs=response['songs'];assert len(songs)==limit
     assert len({s['assetId'] for s in songs})==limit

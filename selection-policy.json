@@ -6,7 +6,8 @@
     "Milos Krkoska",
     "Richard Allen Harvey",
     "Einschlafmusik für Babys",
-    "Bruton"
+    "Bruton",
+    "Jonathan Bourne"
   ],
   "excludedWords": [
     "Void"
@@ -20,6 +21,20 @@
     {
       "artist": "Sonoton Vinyl",
       "title": "Threat Of Death"
+    },
+    {
+      "artist": "Kosinus",
+      "title": "Immortals"
+    },
+    {
+      "artist": "Kosinus",
+      "title": "Epic Trailer"
+    }
+  ],
+  "excludedTrackWords": [
+    {
+      "artist": "Marc Dall'Anese",
+      "word": "Epic"
     }
   ]
 }
