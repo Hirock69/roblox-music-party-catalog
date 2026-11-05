@@ -116,4 +116,16 @@ class PublisherTests(unittest.TestCase):
             self.assertIsNone(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song'},policy))
             self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Other Artist','title':title},policy))
 
+    def test_requested_song_replacement(self):
+        import json
+        import publisher
+        policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
+        entries=json.loads((publisher.ROOT/'manual-tracks.json').read_text())['tracks']
+        new=next(t for t in entries if t['assetId']==121568400889103)
+        self.assertEqual(publisher.blocked({'assetId':91985041417191,'title':'Renamed','artist':'Renamed'},policy),'asset')
+        self.assertIsNone(publisher.blocked(new,policy))
+        merged=publisher.merge_songs([dict(new),{'assetId':91985041417191,'title':'Old','artist':'Old'}],[dict(new,manual=True,chartRank=0)])
+        eligible=[s for s in merged if not publisher.blocked(s,policy)]
+        self.assertEqual([s['assetId'] for s in eligible],[121568400889103])
+
 if __name__=='__main__':unittest.main()
