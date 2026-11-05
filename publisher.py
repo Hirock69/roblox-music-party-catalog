@@ -10,6 +10,8 @@ import shutil
 import subprocess
 import tempfile
 import urllib.request
+import urllib.error
+import time
 from datetime import datetime, timezone
 from audio_features import analyze, rhythm
 
@@ -18,7 +20,16 @@ ORIGIN='https://hirock69.github.io/roblox-music-party-catalog/'
 
 def fetch(url,limit=30_000_000):
     request=urllib.request.Request(url,headers={'Accept-Encoding':'identity','User-Agent':'MusicPartyCatalog/1'})
-    with urllib.request.urlopen(request,timeout=30) as response:raw=response.read(limit+1)
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(request,timeout=30) as response:raw=response.read(limit+1)
+            break
+        except urllib.error.HTTPError as exc:
+            if exc.code not in (429,500,502,503,504) or attempt==3:raise
+            retry=exc.headers.get('Retry-After','') if exc.headers else ''
+            delay=min(30,max(1,float(retry))) if retry.isdigit() else (2,5,12)[attempt]
+            print('RETRY',exc.code,'attempt',attempt+2,'delay',delay,flush=True)
+            time.sleep(delay)
     if len(raw)>limit:raise ValueError('Response too large')
     if raw.startswith(b'\x1f\x8b'):
         raw=gzip.decompress(raw)
@@ -82,8 +93,13 @@ def load_manual():
     for entry in data['tracks']:
         asset=entry['assetId'];assert type(asset) is int and 0<asset<2**53 and asset not in seen
         seen.add(asset)
-        meta=json.loads(fetch('https://economy.roblox.com/v2/assets/'+str(asset)+'/details',100000))
-        assert meta['AssetTypeId']==3,'Manual asset must be audio'
+        # Registered metadata avoids daily economy API calls from shared CI IPs.
+        # ID-only additions still resolve officially; decoded audio is validated later.
+        if all(k in entry for k in ('title','artist','albumArtAssetId')):
+            meta={'Name':entry['title'],'Creator':{'Name':entry['artist']},'IconImageAssetId':entry['albumArtAssetId']}
+        else:
+            meta=json.loads(fetch('https://economy.roblox.com/v2/assets/'+str(asset)+'/details',100000))
+            assert meta['AssetTypeId']==3,'Manual asset must be audio'
         song={'assetId':asset,'title':entry.get('title',meta['Name']),
               'artist':entry.get('artist',meta['Creator']['Name']),
               'albumArtAssetId':entry.get('albumArtAssetId',meta.get('IconImageAssetId',0)),

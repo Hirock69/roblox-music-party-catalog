@@ -2,28 +2,68 @@
   "schema": 1,
   "tracks": [
     {
-      "assetId": 117415969551444
+      "assetId": 117415969551444,
+      "title": "A Winner",
+      "artist": "APMOfficial",
+      "albumArtAssetId": 0,
+      "metadataSource": "https://economy.roblox.com/v2/assets/117415969551444/details",
+      "metadataVerifiedAt": "2026-11-05T03:12:29.933120+00:00"
     },
     {
-      "assetId": 80332217109450
+      "assetId": 80332217109450,
+      "title": "New Day",
+      "artist": "APMOfficial",
+      "albumArtAssetId": 0,
+      "metadataSource": "https://economy.roblox.com/v2/assets/80332217109450/details",
+      "metadataVerifiedAt": "2026-11-05T03:12:33.869816+00:00"
     },
     {
-      "assetId": 9046945877
+      "assetId": 9046945877,
+      "title": "Free Wings",
+      "artist": "APMOfficial",
+      "albumArtAssetId": 0,
+      "metadataSource": "https://economy.roblox.com/v2/assets/9046945877/details",
+      "metadataVerifiedAt": "2026-11-05T03:12:39.037468+00:00"
     },
     {
-      "assetId": 1839073664
+      "assetId": 1839073664,
+      "title": "Happy Dj",
+      "artist": "APMOfficial",
+      "albumArtAssetId": 0,
+      "metadataSource": "https://economy.roblox.com/v2/assets/1839073664/details",
+      "metadataVerifiedAt": "2026-11-05T03:12:42.550340+00:00"
     },
     {
-      "assetId": 1839074215
+      "assetId": 1839074215,
+      "title": "Dj Kid",
+      "artist": "APMOfficial",
+      "albumArtAssetId": 0,
+      "metadataSource": "https://economy.roblox.com/v2/assets/1839074215/details",
+      "metadataVerifiedAt": "2026-11-05T03:12:45.386430+00:00"
     },
     {
-      "assetId": 1836577953
+      "assetId": 1836577953,
+      "title": "Higher Plane",
+      "artist": "APMOfficial",
+      "albumArtAssetId": 0,
+      "metadataSource": "https://economy.roblox.com/v2/assets/1836577953/details",
+      "metadataVerifiedAt": "2026-11-05T03:12:50.155354+00:00"
     },
     {
-      "assetId": 1839237742
+      "assetId": 1839237742,
+      "title": "Amusement Park",
+      "artist": "APMOfficial",
+      "albumArtAssetId": 0,
+      "metadataSource": "https://economy.roblox.com/v2/assets/1839237742/details",
+      "metadataVerifiedAt": "2026-11-05T03:12:52.683036+00:00"
     },
     {
-      "assetId": 1839542638
+      "assetId": 1839542638,
+      "title": "Dance Into My Heart",
+      "artist": "APMOfficial",
+      "albumArtAssetId": 0,
+      "metadataSource": "https://economy.roblox.com/v2/assets/1839542638/details",
+      "metadataVerifiedAt": "2026-11-05T03:12:59.078419+00:00"
     }
   ]
 }

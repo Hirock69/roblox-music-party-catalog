@@ -60,6 +60,25 @@ class PublisherTests(unittest.TestCase):
         self.assertIsNone(publisher.blocked(song("Marc Dall'Anese",'Quiet Theme'),policy))
         self.assertIsNone(publisher.blocked(song('Other Artist','Epic Theme'),policy))
 
+    def test_transient_throttle_and_registered_metadata(self):
+        import json
+        import io
+        import urllib.error
+        from unittest.mock import patch, MagicMock
+        import publisher
+        response=MagicMock();response.__enter__.return_value.read.return_value=b'healthy'
+        error=urllib.error.HTTPError('https://example.test',429,'throttled',{'Retry-After':'1'},None)
+        with patch.object(publisher.urllib.request,'urlopen',side_effect=[error,response]) as request,patch.object(publisher.time,'sleep') as sleep:
+            self.assertEqual(publisher.fetch('https://example.test'),b'healthy')
+            self.assertEqual(request.call_count,2);sleep.assert_called_once_with(1)
+        with patch.object(publisher.urllib.request,'urlopen',side_effect=error) as request,patch.object(publisher.time,'sleep'):
+            with self.assertRaises(urllib.error.HTTPError):publisher.fetch('https://example.test')
+            self.assertEqual(request.call_count,4)
+        with tempfile.TemporaryDirectory() as name:
+            root=Path(name);(root/'manual-tracks.json').write_text(json.dumps({'schema':1,'tracks':[{'assetId':1,'title':'Verified','artist':'Uploader','albumArtAssetId':0}]}))
+            with patch.object(publisher,'ROOT',root),patch.object(publisher,'fetch',side_effect=AssertionError('must not requery metadata')):
+                self.assertEqual(publisher.load_manual()[0]['title'],'Verified')
+
     def test_manual_generation(self):
         import json
         from unittest.mock import patch
