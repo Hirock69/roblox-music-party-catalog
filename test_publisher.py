@@ -106,4 +106,14 @@ class PublisherTests(unittest.TestCase):
                 (root/'manual-tracks.json').write_text(json.dumps({'schema':1,'tracks':[{'assetId':1},{'assetId':1}]}))
                 with self.assertRaises(AssertionError):publisher.load_manual()
 
+    def test_four_requested_song_exclusions(self):
+        import json
+        import publisher
+        policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
+        for artist,title,asset in [('Roger Stephen Dexter', 'Classical Heritage (B)', 1840230230), ('2nd Foundation Music', 'Rogue Pursuit Main orch only', 1835131725), ('Sonoton Vanguard', 'The End Is Now D', 9046267554), ('François Rousselot', 'Army of Darkness', 1843379079)]:
+            self.assertEqual(publisher.blocked({'assetId':asset,'artist':'Renamed','title':'Renamed'},policy),'asset')
+            self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':title},policy),'track')
+            self.assertIsNone(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song'},policy))
+            self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Other Artist','title':title},policy))
+
 if __name__=='__main__':unittest.main()

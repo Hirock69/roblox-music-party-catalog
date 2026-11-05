@@ -13,7 +13,11 @@
     "Void"
   ],
   "excludedAssetIds": [
-    72125382966885
+    72125382966885,
+    1840230230,
+    1835131725,
+    9046267554,
+    1843379079
   ],
   "excludedTracks": [
     {
@@ -35,6 +39,22 @@
     {
       "artist": "NojikoFM",
       "title": "Haunted House"
+    },
+    {
+      "artist": "Roger Stephen Dexter",
+      "title": "Classical Heritage (B)"
+    },
+    {
+      "artist": "2nd Foundation Music",
+      "title": "Rogue Pursuit Main orch only"
+    },
+    {
+      "artist": "Sonoton Vanguard",
+      "title": "The End Is Now D"
+    },
+    {
+      "artist": "François Rousselot",
+      "title": "Army of Darkness"
     }
   ],
   "excludedTrackWords": [
