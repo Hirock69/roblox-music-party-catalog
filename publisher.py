@@ -75,14 +75,39 @@ def load_chart(policy):
     assert len({s['assetId'] for s in songs})==limit
     return endpoint,songs
 
+def load_manual():
+    data=json.loads((ROOT/'manual-tracks.json').read_text())
+    assert data['schema']==1 and isinstance(data['tracks'],list) and len(data['tracks'])<=40
+    seen=set();songs=[]
+    for entry in data['tracks']:
+        asset=entry['assetId'];assert type(asset) is int and 0<asset<2**53 and asset not in seen
+        seen.add(asset)
+        meta=json.loads(fetch('https://economy.roblox.com/v2/assets/'+str(asset)+'/details',100000))
+        assert meta['AssetTypeId']==3,'Manual asset must be audio'
+        song={'assetId':asset,'title':entry.get('title',meta['Name']),
+              'artist':entry.get('artist',meta['Creator']['Name']),
+              'albumArtAssetId':entry.get('albumArtAssetId',meta.get('IconImageAssetId',0)),
+              'manual':True,'chartRank':0}
+        assert isinstance(song['title'],str) and song['title'].strip() and isinstance(song['artist'],str) and song['artist'].strip()
+        assert type(song['albumArtAssetId']) is int and 0<=song['albumArtAssetId']<2**53
+        songs.append(song)
+    return songs
+
+def merge_songs(chart,manual):
+    # A Human registration replaces its chart copy; one asset gets one deck slot.
+    ids={s['assetId'] for s in manual}
+    return [dict(s,chartRank=i) for i,s in enumerate(chart,1) if s['assetId'] not in ids]+manual
+
 def build(seed=None):
     policy=json.loads((ROOT/'selection-policy.json').read_text())
-    endpoint,songs=load_chart(policy)
+    endpoint,chart=load_chart(policy)
+    songs=merge_songs(chart,load_manual())
     cache=ROOT/'.cache';cache.mkdir(exist_ok=True);site=ROOT/'site'
     if site.exists():shutil.rmtree(site)
     (site/'profiles').mkdir(parents=True)
     rows=[];report=[];timestamp=datetime.now(timezone.utc).isoformat()
-    for rank,song in enumerate(songs,1):
+    for song in songs:
+        rank=song['chartRank']
         reason=blocked(song,policy)
         if reason:report.append({'rank':rank,'assetId':song['assetId'],'excluded':reason});continue
         try:
@@ -97,8 +122,8 @@ def build(seed=None):
             profile=data['profile'];validate_profile(profile,asset);payload=encoded(profile);profile_hash=digest(payload)
             assert len(payload)<=180000
             rel='profiles/'+profile_hash+'.json';(site/rel).write_bytes(payload)
-            row={'key':'chart-'+str(asset),'assetId':asset,'title':song['title'],'artist':song['artist'],
-                'albumArtAssetId':song['albumArtAssetId'],'chartRank':rank,'playbackSeconds':data['playbackSeconds'],
+            row={'key':('manual-' if song.get('manual') else 'chart-')+str(asset),'assetId':asset,'title':song['title'],'artist':song['artist'],
+                'manual':song.get('manual',False),'albumArtAssetId':song['albumArtAssetId'],'chartRank':rank,'playbackSeconds':data['playbackSeconds'],
                 'tailSeconds':data.get('tailSeconds',0),'profile':rel,'profileHash':profile_hash}
             rows.append(row);report.append({'rank':rank,'assetId':asset,'analysis':'ready','seconds':data['playbackSeconds']})
             print('READY',rank,song['title'],flush=True)

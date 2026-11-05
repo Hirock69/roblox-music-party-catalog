@@ -60,4 +60,31 @@ class PublisherTests(unittest.TestCase):
         self.assertIsNone(publisher.blocked(song("Marc Dall'Anese",'Quiet Theme'),policy))
         self.assertIsNone(publisher.blocked(song('Other Artist','Epic Theme'),policy))
 
+    def test_manual_generation(self):
+        import json
+        from unittest.mock import patch
+        import publisher
+        with tempfile.TemporaryDirectory() as name:
+            root=Path(name)
+            policy={'chartLimit':40,'excludedArtists':[],'excludedWords':['Void'],'excludedAssetIds':[]}
+            (root/'selection-policy.json').write_text(json.dumps(policy))
+            (root/'manual-tracks.json').write_text(json.dumps({'schema':1,'tracks':[{'assetId':1},{'assetId':41},{'assetId':42,'title':'Void'}]}))
+            chart=[{'assetId':i,'title':'Chart '+str(i),'artist':'Artist','albumArtAssetId':1} for i in range(1,41)]
+            def fetch(url,limit=0):
+                if 'economy.roblox.com' in url:return json.dumps({'Name':'Manual','AssetTypeId':3,'Creator':{'Name':'Uploader'},'IconImageAssetId':0}).encode()
+                return url.encode()
+            def extract(raw,asset,workspace):
+                return {'playbackSeconds':1,'profile':{'AssetId':asset,'Duration':1,'Step':0.1,'OnsetStep':0.02,'ReferenceRms':0.3,'Energy':[0.5]*10,'Onsets':[[2,0.8]],'SourceSha256':'a'*64,'Rhythm':{'Bpm':120,'Confidence':1,'Beats':[0,0.5]}}}
+            with patch.object(publisher,'ROOT',root),patch.object(publisher,'load_chart',return_value=('chart',chart)),patch.object(publisher,'fetch',side_effect=fetch),patch.object(publisher,'extract',side_effect=extract):
+                publisher.build()
+                m=json.loads((root/'site/manifest.json').read_text())
+                self.assertEqual(len(m['tracks']),41)
+                manual=[t for t in m['tracks'] if t['manual']]
+                self.assertEqual({t['assetId'] for t in manual},{1,41})
+                self.assertTrue(all(t['chartRank']==0 and t['albumArtAssetId']==0 for t in manual))
+                self.assertEqual(len({t['assetId'] for t in m['tracks']}),41)
+                self.assertTrue(all((root/'site'/t['profile']).is_file() for t in m['tracks']))
+                (root/'manual-tracks.json').write_text(json.dumps({'schema':1,'tracks':[{'assetId':1},{'assetId':1}]}))
+                with self.assertRaises(AssertionError):publisher.load_manual()
+
 if __name__=='__main__':unittest.main()
