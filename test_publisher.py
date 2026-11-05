@@ -31,6 +31,7 @@ class PublisherTests(unittest.TestCase):
         import publisher
         policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
         self.assertEqual(policy['chartLimit'],40)
+        self.assertEqual(publisher.blocked({'assetId':72125382966885,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')
         for artist in ('Milos Krkoska','Richard Allen Harvey','Einschlafmusik für Babys','Bruton'):
             self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':'Music'},policy),'artist')
         for artist,title in (('Brian Bennett','Twilight Zone'),('Sonoton Vinyl','Threat Of Death'),('NojikoFM','Haunted House')):
