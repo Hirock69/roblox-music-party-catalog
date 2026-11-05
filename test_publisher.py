@@ -33,7 +33,7 @@ class PublisherTests(unittest.TestCase):
         self.assertEqual(policy['chartLimit'],40)
         for artist in ('Milos Krkoska','Richard Allen Harvey','Einschlafmusik für Babys','Bruton'):
             self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':'Music'},policy),'artist')
-        for artist,title in (('Brian Bennett','Twilight Zone'),('Sonoton Vinyl','Threat Of Death')):
+        for artist,title in (('Brian Bennett','Twilight Zone'),('Sonoton Vinyl','Threat Of Death'),('NojikoFM','Haunted House')):
             self.assertEqual(publisher.blocked({'assetId':1,'artist':' '+artist.upper()+' ','title':' '+title.upper()+' '},policy),'track')
             self.assertIsNone(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song'},policy))
             self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Other Artist','title':title},policy))
