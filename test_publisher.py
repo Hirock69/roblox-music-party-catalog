@@ -32,9 +32,11 @@ class PublisherTests(unittest.TestCase):
         policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
         self.assertEqual(policy['chartLimit'],40)
         self.assertEqual(publisher.blocked({'assetId':72125382966885,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')
+        self.assertEqual(publisher.blocked({'assetId':1835133498,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')
+        self.assertEqual(publisher.blocked({'assetId':9045515252,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')
         for artist in ('Milos Krkoska','Richard Allen Harvey','Einschlafmusik für Babys','Bruton'):
             self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':'Music'},policy),'artist')
-        for artist,title in (('Brian Bennett','Twilight Zone'),('Sonoton Vinyl','Threat Of Death'),('NojikoFM','Haunted House')):
+        for artist,title in (('Brian Bennett','Twilight Zone'),('Sonoton Vinyl','Threat Of Death'),('NojikoFM','Haunted House'),('2nd Foundation Music','Target Acquired Main orch only'),('Epic Score','We Fight As One (A)')):
             self.assertEqual(publisher.blocked({'assetId':1,'artist':' '+artist.upper()+' ','title':' '+title.upper()+' '},policy),'track')
             self.assertIsNone(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song'},policy))
             self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Other Artist','title':title},policy))

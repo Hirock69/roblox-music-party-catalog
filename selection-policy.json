@@ -18,7 +18,9 @@
     1835131725,
     9046267554,
     1843379079,
-    91985041417191
+    91985041417191,
+    1835133498,
+    9045515252
   ],
   "excludedTracks": [
     {
@@ -56,6 +58,14 @@
     {
       "artist": "François Rousselot",
       "title": "Army of Darkness"
+    },
+    {
+      "artist": "2nd Foundation Music",
+      "title": "Target Acquired Main orch only"
+    },
+    {
+      "artist": "Epic Score",
+      "title": "We Fight As One (A)"
     }
   ],
   "excludedTrackWords": [
