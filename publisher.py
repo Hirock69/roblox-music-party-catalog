@@ -47,20 +47,7 @@ def blocked(song,policy):
     text=(song['title']+' '+song['artist']).lower()
     return 'word' if any(v.strip().lower() in text for v in policy['excludedWords']) else None
 
-def validate_profile(p,asset):
-    assert p['AssetId']==asset and 0<p['Duration']<=300.1
-    assert 0<p['Step']<=1 and 0<p['OnsetStep']<=1 and 0<p['ReferenceRms']<=1
-    assert abs(len(p['Energy'])*p['Step']-p['Duration'])<=p['Step']+1e-5
-    assert len(p['Energy'])<=4000 and all(math.isfinite(v) and 0<=v<=1 for v in p['Energy'])
-    assert len(p['Onsets'])<=16000
-    previous=0
-    for i,v in p['Onsets']:
-        assert isinstance(i,int) and previous<i<=math.ceil(p['Duration']/p['OnsetStep'])+1 and 0<v<=1
-        previous=i
-    assert re.fullmatch('[0-9a-f]{64}',p['SourceSha256'])
-    r=p['Rhythm'];assert 0<=r['Bpm']<=300 and 0<=r['Confidence']<=1 and len(r['Beats'])<=3000
-    assert all(math.isfinite(v) and 0<=v<p['Duration'] for v in r['Beats'])
-    assert all(a<b for a,b in zip(r['Beats'],r['Beats'][1:]))
+from library import validate_profile
 
 def extract(raw,asset,workspace):
     source=workspace/'source.audio';wav=workspace/'decoded.wav';source.write_bytes(raw)
@@ -159,6 +146,9 @@ def build(seed=None):
     for row in rows:(cache/('profile-'+row['profileHash']+'.json')).write_bytes((site/row['profile']).read_bytes())
     history_path.write_bytes(encoded([manifest]+history))
     (site/'manifest.json').write_bytes(encoded(manifest));(site/'health.json').write_bytes(encoded({'generatedAt':timestamp,'revision':revision,'eligible':len(rows),'report':report}))
+    from library import build_library
+    library=build_library(ROOT,site,rows,policy,timestamp,validate_profile)
+    print('PASS permanent library',library['count'],library['revision'],flush=True)
     (site/'index.html').write_text('<!doctype html><meta charset="utf-8"><title>Music Party catalog</title><h1>Music Party catalog</h1><p>Numeric music analysis only; no audio or game source.</p><a href="manifest.json">Catalog</a> · <a href="health.json">Update health</a>\n')
     print('PASS complete generation',revision,len(rows),'songs',flush=True)
 
