@@ -31,6 +31,9 @@ class PublisherTests(unittest.TestCase):
         import publisher
         policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
         self.assertEqual(policy['chartLimit'],40)
+        self.assertEqual(publisher.blocked({'assetId':79494108850905,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')
+        self.assertEqual(publisher.blocked({'assetId':1,'artist':'Holiday Cafe','title':'Beware of Darkness'},policy),'track')
+        self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Holiday Cafe','title':'Other Song'},policy))
         self.assertEqual(publisher.blocked({'assetId':72125382966885,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')
         self.assertEqual(publisher.blocked({'assetId':1835133498,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')
         self.assertEqual(publisher.blocked({'assetId':9045515252,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')

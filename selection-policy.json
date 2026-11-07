@@ -20,7 +20,8 @@
     1843379079,
     91985041417191,
     1835133498,
-    9045515252
+    9045515252,
+    79494108850905
   ],
   "excludedTracks": [
     {
@@ -66,6 +67,10 @@
     {
       "artist": "Epic Score",
       "title": "We Fight As One (A)"
+    },
+    {
+      "artist": "Holiday Cafe",
+      "title": "Beware of Darkness"
     }
   ],
   "excludedTrackWords": [
