@@ -24,7 +24,15 @@
     9045515252,
     79494108850905,
     1848089181,
-    1837825481
+    1837825481,
+    74490212606369,
+    1843014871,
+    1839321642,
+    1837825389,
+    1836916028,
+    1839768373,
+    1841419054,
+    1838623437
   ],
   "excludedTracks": [
     {
@@ -82,6 +90,38 @@
     {
       "artist": "Daniel James",
       "title": "Tower Fall (A)"
+    },
+    {
+      "artist": "Bocah Nusa",
+      "title": "The End Of Darkness"
+    },
+    {
+      "artist": "Michel Corsa",
+      "title": "Hand Of God (No Rise)"
+    },
+    {
+      "artist": "Kosinus",
+      "title": "Return Of The Heroes"
+    },
+    {
+      "artist": "Aaron Sapp",
+      "title": "Warriors To The End (B)"
+    },
+    {
+      "artist": "Bob Bradley",
+      "title": "Gates of Hell"
+    },
+    {
+      "artist": "Kosinus",
+      "title": "Heroes Rebirth"
+    },
+    {
+      "artist": "Daniel Law Heath",
+      "title": "Thin Ice a"
+    },
+    {
+      "artist": "Romain Paillot",
+      "title": "The Last Survivor"
     }
   ],
   "excludedTrackWords": [

@@ -6,6 +6,26 @@ import unittest
 from publisher import blocked,extract,validate_profile
 
 class PublisherTests(unittest.TestCase):
+    def test_requested_cinematic_tracks_are_blocked_from_chart_and_manual(self):
+        import json
+        import publisher
+        policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
+        cases=[('Michel Corsa','Hand Of God (No Rise)',1843014871),
+               ('Daniel Law Heath','Thin Ice a',1841419054),
+               ('Romain Paillot','The Last Survivor',1838623437),
+               ('Kosinus','Heroes Rebirth',1839768373),
+               ('Bob Bradley','Gates of Hell',1836916028),
+               ('Bocah Nusa','The End Of Darkness',74490212606369),
+               ('Kosinus','Return Of The Heroes',1839321642),
+               ('Aaron Sapp','Warriors To The End (B)',1837825389)]
+        for artist,title,asset in cases:
+            for manual in [False,True]:
+                with self.subTest(asset=asset,manual=manual):
+                    self.assertEqual(publisher.blocked({'assetId':asset,'artist':'Renamed','title':'Renamed','manual':manual},policy),'asset')
+                    self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':title,'manual':manual},policy),'track')
+                    self.assertIsNone(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song','manual':manual},policy))
+                    self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Other Artist','title':title,'manual':manual},policy))
+
     def test_human_exclusions(self):
         policy={'excludedArtists':['Human Sound Recorder'],'excludedWords':['Void'],'excludedAssetIds':[42]}
         self.assertEqual(blocked({'assetId':1,'artist':' human sound recorder ','title':'Music'},policy),'artist')
