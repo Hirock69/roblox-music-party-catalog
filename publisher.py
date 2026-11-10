@@ -47,7 +47,7 @@ def blocked(song,policy):
     text=(song['title']+' '+song['artist']).lower()
     return 'word' if any(v.strip().lower() in text for v in policy['excludedWords']) else None
 
-from library import validate_profile
+from library import validate_profile,metadata as validate_metadata
 
 def extract(raw,asset,workspace):
     source=workspace/'source.audio';wav=workspace/'decoded.wav';source.write_bytes(raw)
@@ -64,7 +64,8 @@ def extract(raw,asset,workspace):
     return dict(profile=profile,playbackSeconds=max(duration,f['duration']),tailSeconds=0.1)
 
 def load_chart(policy):
-    limit=policy['chartLimit'];assert type(limit) is int and 1<=limit<=40
+    limit=policy['chartLimit'];assert type(limit) is int and 1<=limit<=100
+    chart_target(policy)
     assert all(isinstance(v,str) and v.strip() for key in ('excludedArtists','excludedWords') for v in policy[key])
     assert all(type(pair) is dict and all(isinstance(pair.get(k),str) and pair[k].strip() for k in ('artist','title')) for pair in policy.get('excludedTracks',[]))
     assert all(type(rule) is dict and all(isinstance(rule.get(k),str) and rule[k].strip() for k in ('artist','word')) for rule in policy.get('excludedTrackWords',[]))
@@ -72,6 +73,13 @@ def load_chart(policy):
     response=json.loads(fetch(endpoint,100000));songs=response['songs'];assert len(songs)==limit
     assert len({s['assetId'] for s in songs})==limit
     return endpoint,songs
+
+def chart_target(policy):
+    # Omitted only by legacy catalog generations. Raising 20 to 30 is an
+    # explicit policy change, never inferred from the number of manual songs.
+    target=policy.get('chartTarget')
+    assert target is None or type(target) is int and 1<=target<=min(40,policy['chartLimit']), 'Invalid chart target'
+    return target
 
 def load_manual():
     data=json.loads((ROOT/'manual-tracks.json').read_text())
@@ -103,14 +111,18 @@ def merge_songs(chart,manual):
 
 def build(seed=None):
     policy=json.loads((ROOT/'selection-policy.json').read_text())
+    target=chart_target(policy)
     endpoint,chart=load_chart(policy)
     songs=merge_songs(chart,load_manual())
     cache=ROOT/'.cache';cache.mkdir(exist_ok=True);site=ROOT/'site'
     if site.exists():shutil.rmtree(site)
     (site/'profiles').mkdir(parents=True)
-    rows=[];report=[];timestamp=datetime.now(timezone.utc).isoformat()
+    rows=[];report=[];chart_ready=0;timestamp=datetime.now(timezone.utc).isoformat()
     for song in songs:
         rank=song['chartRank']
+        # Chart rows are in their original rank order. Only successfully
+        # analyzed, distinct non-manual rows count toward the chart budget.
+        if not song.get('manual') and target is not None and chart_ready>=target:continue
         reason=blocked(song,policy)
         if reason:report.append({'rank':rank,'assetId':song['assetId'],'excluded':reason});continue
         try:
@@ -128,12 +140,16 @@ def build(seed=None):
             row={'key':('manual-' if song.get('manual') else 'chart-')+str(asset),'assetId':asset,'title':song['title'],'artist':song['artist'],
                 'manual':song.get('manual',False),'albumArtAssetId':song['albumArtAssetId'],'chartRank':rank,'playbackSeconds':data['playbackSeconds'],
                 'tailSeconds':data.get('tailSeconds',0),'profile':rel,'profileHash':profile_hash}
+            validate_metadata(row)
             rows.append(row);report.append({'rank':rank,'assetId':asset,'analysis':'ready','seconds':data['playbackSeconds']})
+            if not song.get('manual'):chart_ready+=1
             print('READY',rank,song['title'],flush=True)
         except Exception as exc:
             report.append({'rank':rank,'assetId':song.get('assetId'),'excluded':'unavailable-or-analysis-failed','error':str(exc)[:240]})
             print('EXCLUDED',rank,str(exc)[:160],flush=True)
-    assert len(rows)>=max(1,min(3,sum(not blocked(s,policy) for s in songs))),'Insufficient valid analyzed songs; previous generation retained'
+    assert target is None or chart_ready==target, 'Chart target not met; previous generation retained'
+    assert len(rows)-chart_ready==sum(s.get('manual',False) and not blocked(s,policy) for s in songs), 'Manual song unavailable; previous generation retained'
+    assert target is not None or len(rows)>=max(1,min(3,sum(not blocked(s,policy) for s in songs))),'Insufficient valid analyzed songs; previous generation retained'
     basis={'schema':1,'policy':policy,'tracks':rows};revision=digest(encoded(basis))
     manifest={**basis,'revision':revision,'generatedAt':timestamp,'source':endpoint}
     # Retain two prior generations so a request straddling deployment stays valid.
@@ -145,7 +161,7 @@ def build(seed=None):
             if stored.exists() and not (site/filename).exists():(site/filename).write_bytes(stored.read_bytes())
     for row in rows:(cache/('profile-'+row['profileHash']+'.json')).write_bytes((site/row['profile']).read_bytes())
     history_path.write_bytes(encoded([manifest]+history))
-    (site/'manifest.json').write_bytes(encoded(manifest));(site/'health.json').write_bytes(encoded({'generatedAt':timestamp,'revision':revision,'eligible':len(rows),'report':report}))
+    (site/'manifest.json').write_bytes(encoded(manifest));(site/'health.json').write_bytes(encoded({'generatedAt':timestamp,'revision':revision,'eligible':len(rows),'chartTarget':target,'chartEligible':chart_ready,'manualEligible':len(rows)-chart_ready,'report':report}))
     from library import build_library
     library=build_library(ROOT,site,rows,policy,timestamp,validate_profile)
     print('PASS permanent library',library['count'],library['revision'],flush=True)

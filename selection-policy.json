@@ -1,5 +1,6 @@
 {
-  "chartLimit": 40,
+  "chartLimit": 100,
+  "chartTarget": 20,
   "excludedArtists": [
     "Human Sound Recorder",
     "Ocean Hill Noise",
@@ -21,7 +22,9 @@
     91985041417191,
     1835133498,
     9045515252,
-    79494108850905
+    79494108850905,
+    1848089181,
+    1837825481
   ],
   "excludedTracks": [
     {
@@ -71,6 +74,14 @@
     {
       "artist": "Holiday Cafe",
       "title": "Beware of Darkness"
+    },
+    {
+      "artist": "Gregor F Narholz",
+      "title": "The Incident"
+    },
+    {
+      "artist": "Daniel James",
+      "title": "Tower Fall (A)"
     }
   ],
   "excludedTrackWords": [

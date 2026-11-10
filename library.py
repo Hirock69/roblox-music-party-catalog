@@ -36,8 +36,8 @@ def metadata(t):
     assert isinstance(t['title'],str) and 0<len(t['title'])<=160
     assert isinstance(t['artist'],str) and 0<len(t['artist'])<=120
     assert type(t['manual']) is bool and t['key']==('manual-' if t['manual'] else 'chart-')+str(t['assetId'])
-    assert type(t['chartRank']) is int and (t['chartRank']==0 if t['manual'] else 1<=t['chartRank']<=40)
-    assert type(t['albumArtAssetId']) is int and 0<=t['albumArtAssetId']<2**53
+    assert type(t['chartRank']) is int and (t['chartRank']==0 if t['manual'] else 1<=t['chartRank']<=100)
+    assert type(t['albumArtAssetId']) is int and (0 if t['manual']else 1)<=t['albumArtAssetId']<2**53
     assert 0<t['playbackSeconds']<=86400 and 0<=t.get('tailSeconds',0)<=.15
     assert re.fullmatch('[a-f0-9]{64}',t['profileHash']) and t['profile']=='profiles/'+t['profileHash']+'.json'
 

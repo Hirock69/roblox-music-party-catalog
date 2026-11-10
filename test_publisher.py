@@ -30,7 +30,10 @@ class PublisherTests(unittest.TestCase):
         import json
         import publisher
         policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
-        self.assertEqual(policy['chartLimit'],40)
+        self.assertEqual(policy['chartLimit'],100)
+        self.assertEqual(policy['chartTarget'],20)
+        self.assertEqual(publisher.blocked({'assetId':1837825481,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')
+        self.assertEqual(publisher.blocked({'assetId':1848089181,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')
         self.assertEqual(publisher.blocked({'assetId':79494108850905,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')
         self.assertEqual(publisher.blocked({'assetId':1,'artist':'Holiday Cafe','title':'Beware of Darkness'},policy),'track')
         self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Holiday Cafe','title':'Other Song'},policy))
@@ -39,15 +42,15 @@ class PublisherTests(unittest.TestCase):
         self.assertEqual(publisher.blocked({'assetId':9045515252,'artist':'Renamed Artist','title':'Renamed Song'},policy),'asset')
         for artist in ('Milos Krkoska','Richard Allen Harvey','Einschlafmusik für Babys','Bruton'):
             self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':'Music'},policy),'artist')
-        for artist,title in (('Brian Bennett','Twilight Zone'),('Sonoton Vinyl','Threat Of Death'),('NojikoFM','Haunted House'),('2nd Foundation Music','Target Acquired Main orch only'),('Epic Score','We Fight As One (A)')):
+        for artist,title in (('Daniel James','Tower Fall (A)'),('Gregor F Narholz','The Incident'),('Brian Bennett','Twilight Zone'),('Sonoton Vinyl','Threat Of Death'),('NojikoFM','Haunted House'),('2nd Foundation Music','Target Acquired Main orch only'),('Epic Score','We Fight As One (A)')):
             self.assertEqual(publisher.blocked({'assetId':1,'artist':' '+artist.upper()+' ','title':' '+title.upper()+' '},policy),'track')
             self.assertIsNone(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song'},policy))
             self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Other Artist','title':title},policy))
-        songs=[{'assetId':i} for i in range(1,41)]
+        songs=[{'assetId':i} for i in range(1,101)]
         with patch.object(publisher,'fetch',return_value=json.dumps({'songs':songs}).encode()) as fetch:
             endpoint,received=publisher.load_chart(policy)
-            self.assertEqual(len(received),40);self.assertEqual(received[-1]['assetId'],40)
-            self.assertIn('limit=40',endpoint);fetch.assert_called_once_with(endpoint,100000)
+            self.assertEqual(len(received),100);self.assertEqual(received[-1]['assetId'],100)
+            self.assertIn('limit=100',endpoint);fetch.assert_called_once_with(endpoint,100000)
         with patch.object(publisher,'fetch',return_value=json.dumps({'songs':songs[:20]}).encode()):
             with self.assertRaises(AssertionError):publisher.load_chart(policy)
 
