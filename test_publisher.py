@@ -22,9 +22,65 @@ class PublisherTests(unittest.TestCase):
             for manual in [False,True]:
                 with self.subTest(asset=asset,manual=manual):
                     self.assertEqual(publisher.blocked({'assetId':asset,'artist':'Renamed','title':'Renamed','manual':manual},policy),'asset')
-                    self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':title,'manual':manual},policy),'track')
-                    self.assertIsNone(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song','manual':manual},policy))
+                    self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':title,'manual':manual},policy),'artist' if artist in ('Kosinus','2nd Foundation Music') else 'track')
+                    self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song','manual':manual},policy),'artist' if artist in ('Kosinus','2nd Foundation Music') else None)
                     self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Other Artist','title':title,'manual':manual},policy))
+
+    def test_screenshot_requested_tracks_are_blocked_from_chart_and_manual(self):
+        import json
+        import publisher
+        policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
+        cases=[
+            ('Sonoton Vanguard', 'Slaughter The Sons Of Anathema B', 9038838298),
+            ('Annihilation', 'Creatures Of Power', 9039940977),
+            ('Pantheon Classics', 'Peer Gynt Suite No.1 1st Mov. Morning', 1843564290),
+            ('Patrick Wilson', 'Embryonic Mystery', 1836424681),
+            ('Andrew Pearce', 'Parade March', 1838686015),
+            ('Roger Abaji', 'Prehistoric Cave', 1839425285),
+            ('Sammy Burdson', 'Dinosaurs', 1837608824),
+            ('HEAR Instrumentals', 'Dracula', 101174169678880),
+            ('Vlan Kruzier', 'Water Ambience', 76174073119985),
+            ('Imade Saputra', 'Creole Square Dance', 1837214849),
+            ('Haitham Al Hamwi', 'Min Allek', 1845959934),
+            ('shmooblesworld', 'NEARS IN FORTNITE', 140189538108995),
+            ('Jean Claudric', 'The Magnificent Western OL', 1839133071),
+            ('StargazingSkull', 'SPOOKY SONG', 83728699668971),
+            ('Soothing Ambient Waves', 'Maple Leaves on the Welcome Mat', 129428263258889),
+            ('Daniel James', 'Out For Blood (B)', 1837825799),
+            ('Gabriel Shadid', 'Desperate Moment (A)', 1837820737),
+            ('Kosinus', 'Fearless Hero', 1839736799),
+            ('Kosinus', 'Army Of Heroes', 1839420186),
+            ('Philippe Bestion', 'Heroic Combat', 1839526417),
+            ('Baptiste Francois Thiry', 'Rouge Garance', 1837225292),
+            ('Medieval Sleep Realms', 'Ravensmoor Keep (Peaceful Medieval Ambient)', 87479584695420),
+            ('V on Tha Track', 'Lofi Chill Blue Cat Study and Relaxing', 76934240287978),
+            ('Love Sleep Repeat', 'Mindful Spa Relaxation – Minimal Ambient Calm', 120539276313785),
+            ('Lumenmusical', 'Lyre Beneath Ancient Stars', 80924473076423),
+            ('Alain Kremski', 'The Infinity of the Steppes', 1837123055),
+            ('Novalicious', 'Tranquil Echoes (Nature)', 82766980540759),
+            ('Aetheriaus', 'Akashic Drift', 97823682984447),
+        ]
+        for artist,title,asset in cases:
+            for manual in (False,True):
+                with self.subTest(asset=asset,manual=manual):
+                    self.assertEqual(blocked({'assetId':asset,'artist':'Renamed','title':'Renamed','manual':manual},policy),'asset')
+                    self.assertEqual(blocked({'assetId':1,'artist':' '+artist.upper()+' ','title':' '+title.upper()+' ','manual':manual},policy),'artist' if artist in ('Kosinus','2nd Foundation Music') else 'track')
+                    self.assertEqual(blocked({'assetId':1,'artist':artist,'title':'Other Song','manual':manual},policy),'artist' if artist in ('Kosinus','2nd Foundation Music') else None)
+                    self.assertIsNone(blocked({'assetId':1,'artist':'Other Artist','title':title,'manual':manual},policy))
+
+    def test_requested_whole_artist_exclusions(self):
+        import json
+        import publisher
+        policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
+        for artist in ('Kosinus','2nd Foundation Music'):
+            for title in ('After School Adventure','Speculator','Spirit Of Magic','Colossal Combat','Future Unknown Song'):
+                for manual in (False,True):
+                    with self.subTest(artist=artist,title=title,manual=manual):
+                        song={'assetId':1,'artist':' '+artist.upper()+' ','title':title,'manual':manual}
+                        self.assertEqual(blocked(song,policy),'artist')
+                        song['artist']='Other Artist'
+                        self.assertIsNone(blocked(song,policy))
+        self.assertIsNone(blocked({'assetId':1,'artist':'Daniel James','title':'Other Song'},policy))
 
     def test_human_exclusions(self):
         policy={'excludedArtists':['Human Sound Recorder'],'excludedWords':['Void'],'excludedAssetIds':[42]}
@@ -63,8 +119,8 @@ class PublisherTests(unittest.TestCase):
         for artist in ('Milos Krkoska','Richard Allen Harvey','Einschlafmusik für Babys','Bruton'):
             self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':'Music'},policy),'artist')
         for artist,title in (('Daniel James','Tower Fall (A)'),('Gregor F Narholz','The Incident'),('Brian Bennett','Twilight Zone'),('Sonoton Vinyl','Threat Of Death'),('NojikoFM','Haunted House'),('2nd Foundation Music','Target Acquired Main orch only'),('Epic Score','We Fight As One (A)')):
-            self.assertEqual(publisher.blocked({'assetId':1,'artist':' '+artist.upper()+' ','title':' '+title.upper()+' '},policy),'track')
-            self.assertIsNone(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song'},policy))
+            self.assertEqual(publisher.blocked({'assetId':1,'artist':' '+artist.upper()+' ','title':' '+title.upper()+' '},policy),'artist' if artist in ('Kosinus','2nd Foundation Music') else 'track')
+            self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song'},policy),'artist' if artist in ('Kosinus','2nd Foundation Music') else None)
             self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Other Artist','title':title},policy))
         songs=[{'assetId':i} for i in range(1,101)]
         with patch.object(publisher,'fetch',return_value=json.dumps({'songs':songs}).encode()) as fetch:
@@ -82,8 +138,8 @@ class PublisherTests(unittest.TestCase):
         def song(artist,title):return {'assetId':1,'artist':artist,'title':title}
         self.assertEqual(publisher.blocked(song('Jonathan Bourne','Music'),policy),'artist')
         for title in ('Immortals','Epic Trailer'):
-            self.assertEqual(publisher.blocked(song('Kosinus',title),policy),'track')
-        self.assertIsNone(publisher.blocked(song('Kosinus','Other Music'),policy))
+            self.assertEqual(publisher.blocked(song('Kosinus',title),policy),'artist')
+        self.assertEqual(publisher.blocked(song('Kosinus','Other Music'),policy),'artist')
         self.assertEqual(publisher.blocked(song(" MARC DALL'ANESE ",'Powerful ePiC Theme'),policy),'artist-title-word')
         self.assertIsNone(publisher.blocked(song("Marc Dall'Anese",'Quiet Theme'),policy))
         self.assertIsNone(publisher.blocked(song('Other Artist','Epic Theme'),policy))
@@ -140,8 +196,8 @@ class PublisherTests(unittest.TestCase):
         policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
         for artist,title,asset in [('Roger Stephen Dexter', 'Classical Heritage (B)', 1840230230), ('2nd Foundation Music', 'Rogue Pursuit Main orch only', 1835131725), ('Sonoton Vanguard', 'The End Is Now D', 9046267554), ('François Rousselot', 'Army of Darkness', 1843379079)]:
             self.assertEqual(publisher.blocked({'assetId':asset,'artist':'Renamed','title':'Renamed'},policy),'asset')
-            self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':title},policy),'track')
-            self.assertIsNone(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song'},policy))
+            self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':title},policy),'artist' if artist in ('Kosinus','2nd Foundation Music') else 'track')
+            self.assertEqual(publisher.blocked({'assetId':1,'artist':artist,'title':'Other Song'},policy),'artist' if artist in ('Kosinus','2nd Foundation Music') else None)
             self.assertIsNone(publisher.blocked({'assetId':1,'artist':'Other Artist','title':title},policy))
 
     def test_requested_song_replacement(self):

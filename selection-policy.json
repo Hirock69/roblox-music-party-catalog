@@ -8,7 +8,9 @@
     "Richard Allen Harvey",
     "Einschlafmusik für Babys",
     "Bruton",
-    "Jonathan Bourne"
+    "Jonathan Bourne",
+    "Kosinus",
+    "2nd Foundation Music"
   ],
   "excludedWords": [
     "Void"
@@ -32,7 +34,35 @@
     1836916028,
     1839768373,
     1841419054,
-    1838623437
+    1838623437,
+    1837825799,
+    1837820737,
+    1839736799,
+    1839420186,
+    1839526417,
+    1837225292,
+    87479584695420,
+    76934240287978,
+    120539276313785,
+    80924473076423,
+    1837123055,
+    82766980540759,
+    97823682984447,
+    140189538108995,
+    1839133071,
+    83728699668971,
+    129428263258889,
+    1845959934,
+    9038838298,
+    9039940977,
+    1843564290,
+    1836424681,
+    1838686015,
+    1839425285,
+    1837608824,
+    101174169678880,
+    76174073119985,
+    1837214849
   ],
   "excludedTracks": [
     {
@@ -122,6 +152,118 @@
     {
       "artist": "Romain Paillot",
       "title": "The Last Survivor"
+    },
+    {
+      "artist": "Daniel James",
+      "title": "Out For Blood (B)"
+    },
+    {
+      "artist": "Gabriel Shadid",
+      "title": "Desperate Moment (A)"
+    },
+    {
+      "artist": "Kosinus",
+      "title": "Fearless Hero"
+    },
+    {
+      "artist": "Kosinus",
+      "title": "Army Of Heroes"
+    },
+    {
+      "artist": "Philippe Bestion",
+      "title": "Heroic Combat"
+    },
+    {
+      "artist": "Baptiste Francois Thiry",
+      "title": "Rouge Garance"
+    },
+    {
+      "artist": "Medieval Sleep Realms",
+      "title": "Ravensmoor Keep (Peaceful Medieval Ambient)"
+    },
+    {
+      "artist": "V on Tha Track",
+      "title": "Lofi Chill Blue Cat Study and Relaxing"
+    },
+    {
+      "artist": "Love Sleep Repeat",
+      "title": "Mindful Spa Relaxation – Minimal Ambient Calm"
+    },
+    {
+      "artist": "Lumenmusical",
+      "title": "Lyre Beneath Ancient Stars"
+    },
+    {
+      "artist": "Alain Kremski",
+      "title": "The Infinity of the Steppes"
+    },
+    {
+      "artist": "Novalicious",
+      "title": "Tranquil Echoes (Nature)"
+    },
+    {
+      "artist": "Aetheriaus",
+      "title": "Akashic Drift"
+    },
+    {
+      "artist": "shmooblesworld",
+      "title": "NEARS IN FORTNITE"
+    },
+    {
+      "artist": "Jean Claudric",
+      "title": "The Magnificent Western OL"
+    },
+    {
+      "artist": "StargazingSkull",
+      "title": "SPOOKY SONG"
+    },
+    {
+      "artist": "Soothing Ambient Waves",
+      "title": "Maple Leaves on the Welcome Mat"
+    },
+    {
+      "artist": "Haitham Al Hamwi",
+      "title": "Min Allek"
+    },
+    {
+      "artist": "Sonoton Vanguard",
+      "title": "Slaughter The Sons Of Anathema B"
+    },
+    {
+      "artist": "Annihilation",
+      "title": "Creatures Of Power"
+    },
+    {
+      "artist": "Pantheon Classics",
+      "title": "Peer Gynt Suite No.1 1st Mov. Morning"
+    },
+    {
+      "artist": "Patrick Wilson",
+      "title": "Embryonic Mystery"
+    },
+    {
+      "artist": "Andrew Pearce",
+      "title": "Parade March"
+    },
+    {
+      "artist": "Roger Abaji",
+      "title": "Prehistoric Cave"
+    },
+    {
+      "artist": "Sammy Burdson",
+      "title": "Dinosaurs"
+    },
+    {
+      "artist": "HEAR Instrumentals",
+      "title": "Dracula"
+    },
+    {
+      "artist": "Vlan Kruzier",
+      "title": "Water Ambience"
+    },
+    {
+      "artist": "Imade Saputra",
+      "title": "Creole Square Dance"
     }
   ],
   "excludedTrackWords": [

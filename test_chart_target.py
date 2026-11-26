@@ -19,11 +19,11 @@ class ChartTargetTests(unittest.TestCase):
         (root/'manual-tracks.json').write_text(json.dumps({'schema':1,'tracks':manual}))
         return policy
 
-    def run_build(self,root):
+    def run_build(self,root,chart=None):
         deliveries=[]
         def fetch(url,limit=0):
             if 'top-songs' in url:
-                return json.dumps({'songs':[{'assetId':i,'title':'Chart '+str(i),'artist':'Artist','albumArtAssetId':1}for i in range(1,101)]}).encode()
+                return json.dumps({'songs':chart if chart is not None else [{'assetId':i,'title':'Chart '+str(i),'artist':'Artist','albumArtAssetId':1}for i in range(1,101)]}).encode()
             asset=int(url.rsplit('=',1)[1]);deliveries.append(asset)
             if asset==27:raise OSError('audio unavailable')
             return str(asset).encode()
@@ -49,6 +49,38 @@ class ChartTargetTests(unittest.TestCase):
             self.assertTrue(all(i not in deliveries for i in range(1,26)))
             self.assertTrue(all((root/'site'/t['profile']).is_file()for t in manifest['tracks']))
             self.assertEqual([r['rank']for r in health['report']if r.get('excluded')=='unavailable-or-analysis-failed'],[27,28])
+            library=json.loads((root/'site/library.json').read_bytes())
+            self.assertEqual(set(library['hot']),{t['assetId']for t in manifest['tracks']})
+
+    def test_november_screenshot_ng_backfills_hot_from_lower_ranks(self):
+        policy=json.loads((publisher.ROOT/'selection-policy.json').read_text())
+        forbidden=[
+            {'assetId': 9038838298, 'artist': 'Sonoton Vanguard', 'title': 'Slaughter The Sons Of Anathema B', 'albumArtAssetId': 1},
+            {'assetId': 9039940977, 'artist': 'Annihilation', 'title': 'Creatures Of Power', 'albumArtAssetId': 1},
+            {'assetId': 1843564290, 'artist': 'Pantheon Classics', 'title': 'Peer Gynt Suite No.1 1st Mov. Morning', 'albumArtAssetId': 1},
+            {'assetId': 1836424681, 'artist': 'Patrick Wilson', 'title': 'Embryonic Mystery', 'albumArtAssetId': 1},
+            {'assetId': 1838686015, 'artist': 'Andrew Pearce', 'title': 'Parade March', 'albumArtAssetId': 1},
+            {'assetId': 1839425285, 'artist': 'Roger Abaji', 'title': 'Prehistoric Cave', 'albumArtAssetId': 1},
+            {'assetId': 1837608824, 'artist': 'Sammy Burdson', 'title': 'Dinosaurs', 'albumArtAssetId': 1},
+            {'assetId': 101174169678880, 'artist': 'HEAR Instrumentals', 'title': 'Dracula', 'albumArtAssetId': 1},
+            {'assetId': 76174073119985, 'artist': 'Vlan Kruzier', 'title': 'Water Ambience', 'albumArtAssetId': 1},
+            {'assetId': 1837214849, 'artist': 'Imade Saputra', 'title': 'Creole Square Dance', 'albumArtAssetId': 1},
+            {'assetId':1845959934,'artist':'Haitham Al Hamwi','title':'Min Allek','albumArtAssetId':1},
+            {'assetId':140189538108995,'artist':'shmooblesworld','title':'NEARS IN FORTNITE','albumArtAssetId':1},
+            {'assetId':1839133071,'artist':'Jean Claudric','title':'The Magnificent Western OL','albumArtAssetId':1},
+            {'assetId':83728699668971,'artist':'StargazingSkull','title':'SPOOKY SONG','albumArtAssetId':1},
+            {'assetId':129428263258889,'artist':'Soothing Ambient Waves','title':'Maple Leaves on the Welcome Mat','albumArtAssetId':1},
+        ]
+        chart=forbidden+[{'assetId':100000+i,'artist':'Safe Artist','title':'Safe '+str(i),'albumArtAssetId':1}for i in range(100-len(forbidden))]
+        with tempfile.TemporaryDirectory() as name:
+            root=Path(name);self.setup_root(root)
+            (root/'selection-policy.json').write_text(json.dumps(policy))
+            manifest,health,deliveries=self.run_build(root,chart)
+            selected=[t for t in manifest['tracks']if not t['manual']]
+            self.assertEqual([t['chartRank']for t in selected],list(range(len(forbidden)+1,len(forbidden)+21)))
+            self.assertEqual((health['chartEligible'],health['manualEligible']),(20,2))
+            self.assertTrue(all(t['assetId']not in deliveries for t in forbidden))
+            self.assertEqual([r['excluded']for r in health['report']if 'excluded'in r],['asset']*len(forbidden)+['word'])
             library=json.loads((root/'site/library.json').read_bytes())
             self.assertEqual(set(library['hot']),{t['assetId']for t in manifest['tracks']})
 
